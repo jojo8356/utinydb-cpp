@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "name": "Alice",
+      "age": 26,
+      "role": "admin",
+      "_id": 1
+    },
+    {
+      "name": "Bob",
+      "age": 30,
+      "role": "user",
+      "_id": 2
+    }
+  ],
+  "posts": [
+    {
+      "title": "Hello World",
+      "author_id": 1,
+      "_id": 1
+    },
+    {
+      "title": "C++ Programming",
+      "author_id": 2,
+      "_id": 2
+    }
+  ]
+}
