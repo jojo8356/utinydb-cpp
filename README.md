@@ -1,13 +1,19 @@
 # UTinyDB (C++)
 
-Lightweight JSON document database in C++17. Zero external dependencies — pure STL.
+Lightweight JSON document database in C++17. Single external dependency.
+
+## Dependencies
+
+- [Prism](https://github.com/jojo8356/prism) — Universal print for C++ (header-only)
 
 ## Quick Start
 
 ```cpp
 #include "utinydb.hpp"
+#include <prism/prism.hpp>
 
 using namespace utinydb;
+using namespace prism;
 
 int main()
 {
@@ -25,9 +31,9 @@ int main()
     Doc q;
     q.set_str("role", "admin");
     for (auto* user : users.find(q)) {
-        printf("%s (age %lld)\n",
-               user->get_str("name"),
-               (long long)user->get_int("age"));
+        println("{} (age {})",
+                user->get_str("name"),
+                user->get_int("age"));
     }
 
     return 0;
@@ -122,7 +128,7 @@ col.clear();
 ```cpp
 auto results = col.find(query);
 for (auto* doc : results) {
-    printf("%s\n", doc->get_str("name"));
+    println("{}", doc->get_str("name"));
 }
 ```
 
@@ -144,6 +150,8 @@ make test-valgrind  # Memory leak check
 make demo           # Build and run example
 make clean
 ```
+
+Adjust the Prism dependency path in the Makefile (`PRISM_INC`) to match your setup.
 
 ## Architecture
 
@@ -174,6 +182,7 @@ utinydb-cpp/
 | `UCollection *col = utinydb_collection(db, "users")` | `auto& col = db->collection("users")` |
 | `UDoc *doc = udoc_new()` | `Doc doc;` |
 | `udoc_set_str(doc, "k", "v")` | `doc.set_str("k", "v")` |
+| `uprintf("Hello %s\n", name)` | `println("Hello {}", name)` |
 | `UVec *r = ucol_find(col, q)` | `auto r = col.find(q)` |
 | `ucol_foreach(r, d) { ... }` | `for (auto* d : r) { ... }` |
 | `uvec_free(r); udoc_free(doc); utinydb_close(db)` | RAII (automatic) |
@@ -182,7 +191,7 @@ utinydb-cpp/
 
 | Feature | Status |
 |---|---|
-| C++17, zero external deps (pure STL) | OK |
+| C++17, Prism only (header-only dep) | OK |
 | JSON file storage (human-readable) | OK |
 | CRUD (insert, find, update, delete) | OK |
 | Query by field equality | OK |
@@ -195,6 +204,7 @@ utinydb-cpp/
 | Export/reload | OK |
 | Range-based for iteration | OK |
 | RAII (no manual free) | OK |
+| Output via Prism (println) | OK |
 | 31 tests passing | OK |
 
 ## Licence

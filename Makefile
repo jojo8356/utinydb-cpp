@@ -13,6 +13,9 @@ BUILDDIR = build
 OBJDIR   = $(BUILDDIR)/obj
 EXDIR    = examples
 
+# Dependencies — adjust paths to your local setup
+PRISM_INC = ../prism/include
+
 # Sources
 SRCS     = $(wildcard $(SRCDIR)/*.cpp)
 OBJS     = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCS))
@@ -24,7 +27,7 @@ TEST_SRCS = $(TESTDIR)/test_main.cpp
 TEST_BIN  = $(BUILDDIR)/test_runner
 
 # Include paths
-INCS     = -I$(INCDIR)
+INCS     = -I$(INCDIR) -I$(PRISM_INC)
 
 # Flags
 CXXFLAGS_BASE  = -std=c++17 -Wall -Wextra -Wpedantic -Werror $(INCS)

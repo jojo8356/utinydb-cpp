@@ -9,11 +9,13 @@
 
 int main(void)
 {
-    printf("UTinyDB (C++) — Full Test Suite\n");
-    printf("========================================\n");
+    using namespace prism;
+
+    println("UTinyDB (C++) — Full Test Suite");
+    println("========================================");
 
     /* Doc */
-    printf("\n--- Doc ---\n");
+    println("\n--- Doc ---");
     TEST(test_doc_types);
     TEST(test_doc_has);
     TEST(test_doc_clone);
@@ -22,7 +24,7 @@ int main(void)
     TEST(test_doc_default_values);
 
     /* CRUD */
-    printf("\n--- CRUD ---\n");
+    println("\n--- CRUD ---");
     TEST(test_insert_simple);
     TEST(test_insert_auto_id);
     TEST(test_insert_many);
@@ -38,7 +40,7 @@ int main(void)
     TEST(test_drop);
 
     /* Aggregations */
-    printf("\n--- Aggregations ---\n");
+    println("\n--- Aggregations ---");
     TEST(test_count);
     TEST(test_exists);
     TEST(test_min_max);
@@ -46,7 +48,7 @@ int main(void)
     TEST(test_sum);
 
     /* Persistence */
-    printf("\n--- Persistence ---\n");
+    println("\n--- Persistence ---");
     TEST(test_save_and_reload);
     TEST(test_auto_save);
     TEST(test_export);
