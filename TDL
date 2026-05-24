@@ -1,0 +1,143 @@
+  1. Sauvegarde atomique
+      - Écrire dans data.json.tmp
+      - Flush / close
+      - Remplacer l’ancien fichier par rename atomique
+      - Évite de corrompre la DB si le programme crash pendant save().
+  2. Définir clairement le modèle de concurrence
+      - Soit “single-thread seulement”
+      - Soit ajouter std::mutex autour des opérations critiques
+      - Soit documenter que plusieurs processus ne sont pas supportés.
+  3. Gestion des erreurs propre
+      - Aujourd’hui, il faut décider ce que fait open(), save(), reload() si :
+          - fichier absent
+          - JSON invalide
+          - permission refusée
+          - disque plein
+      - En C++, tu peux choisir exceptions ou Result<T, Error>, mais il faut une
+        politique claire.
+  4. Ne pas auto-save à chaque petite opération sans contrôle
+      - Pour petite DB, OK.
+      - Mais si insert_many() sauvegarde après chaque insert, ça devient vite
+        lent.
+      - Idéal : suspendre l’auto-save pendant les batchs, puis sauver une fois.
+  5. Protéger _id
+      - Empêcher l’utilisateur d’écraser _id accidentellement via
+        set_int("_id", ...).
+      - Ou au minimum documenter la règle.
+      - update() ne devrait probablement pas pouvoir modifier _id.
+  6. Garantir l’unicité et la continuité des IDs
+      - Au reload(), recalculer next_id à partir du plus grand _id.
+      - Refuser ou corriger les documents avec _id dupliqué.
+  7. API const-correct
+      - Ajouter des variantes const :
+
+     const Collection& collection(...) const;
+     const Doc* get(id) const;
+     std::vector<const Doc*> find(...) const;
+      - Ça rend la lib plus propre à utiliser dans du vrai code.
+
+  8. Retourner des statuts sur update/delete
+      - update() devrait retourner le nombre de documents modifiés.
+      - remove() devrait retourner le nombre supprimé.
+      - update_by_id() / remove_by_id() devraient retourner bool.
+
+  Priorité moyenne
+
+  9. Ajouter des comparateurs simples
+      - Aujourd’hui : égalité seulement.
+      - Ajoute :
+          - supérieur / inférieur pour int/double
+          - contains pour string
+          - has field
+      - Sans faire un moteur de requête complexe.
+  10. Ajouter tri et limite
+
+  col.find(query).sort_by("age").limit(10);
+
+  ou plus simple :
+
+  col.find(query, FindOptions{ .limit = 10, .sort_by = "age" });
+
+  11. Mieux gérer les valeurs manquantes
+
+  - get_int() retourne 0 si absent, mais 0 peut être une vraie valeur.
+  - Ajouter :
+
+  std::optional<int64_t> try_get_int("age");
+  std::optional<std::string_view> try_get_str("name");
+
+  12. Éviter const char* si possible
+
+  - get_str() en const char* peut être fragile selon le stockage interne.
+  - Préférer :
+
+  std::optional<std::string_view>
+
+  ou au moins documenter la durée de vie du pointeur.
+
+  13. Ajouter contains_id()
+
+  bool exists_id(int64_t id) const;
+
+  C’est souvent utile et évite get(id) != nullptr partout.
+
+  14. Validation des noms de collections/champs
+
+  - Interdire ou gérer proprement :
+      - nom vide
+      - _id comme champ utilisateur
+      - caractères problématiques si tu ajoutes plus tard des chemins ou
+        requêtes.
+
+  15. Meilleure API pour insert_many()
+
+  - Retourner les documents insérés ou les IDs créés.
+
+  std::vector<int64_t> insert_many(...);
+
+  16. Séparer find_all() lecture et mutation
+
+  - Si tu retournes des Doc*, l’utilisateur peut modifier sans passer par
+    update().
+  - C’est pratique, mais ça contourne auto-save et validation.
+  - À clarifier : soit assumé, soit remplacé par const Doc* par défaut.
+
+  Priorité basse mais bonne finition
+
+  17. Versionner le format fichier
+
+  {
+    "_meta": { "version": 1 },
+    "users": [...]
+  }
+
+  Utile si tu changes le format plus tard.
+
+  18. Ajouter backup automatique optionnel
+
+  - Avant save : garder data.json.bak
+  - Très utile pour une mini DB fichier.
+
+  19. Ajouter compact()
+
+  - Si plus tard tu passes à un journal ou à des suppressions différées.
+
+  20. Benchmark minimal
+
+  - Insert 1k / 10k docs
+  - Find sur champ
+  - Save/reload
+    Ça te donnera une limite honnête à documenter.
+
+  21. README plus explicite sur les limites
+
+  - “Pas fait pour gros volumes”
+  - “Pas multi-process”
+  - “Pas ACID”
+  - “Recommandé pour config, petits outils, prototypes, tests”
+
+  22. Nom du projet
+
+  - UTinyDB est OK, mais proche de TinyDB.
+  - Si tu veux éviter la confusion : uTinyDoc, TinyDocDB, MicroDocDB, JsonShelf,
+    etc.
